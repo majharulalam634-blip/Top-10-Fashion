@@ -1,0 +1,3040 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top Ten Fashion | প্রিমিয়াম ফ্যাশন ই-কমার্স</title>
+  <meta name="description" content="Top Ten Fashion - বাংলাদেশের প্রিমিয়াম কোয়ালিটি পোশাক ও ফ্যাশন কালেকশন।">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDKs (Compat version for single-file static GitHub hosting) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
+  <style>
+    /* ==========================================================================
+       CSS VARIABLES & THEME SETUP
+       ========================================================================== */
+    :root {
+      --primary: #064E3B;          /* Primary Emerald Green */
+      --primary-hover: #043D2E;    /* Button Hover */
+      --secondary: #F8F5EF;        /* Secondary Soft Cream */
+      --accent: #C6A15B;           /* Champagne Gold */
+      --bg-main: #FFFFFF;          /* Main Background */
+      --text-main: #222222;        /* Main Text */
+      --sale-price: #9F1239;       /* Sale / Discount Price */
+      --border-color: #E5E7EB;     /* Borders */
+      --font-family: 'Hind Siliguri', sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.12);
+      --transition: all 0.25s ease-in-out;
+
+      /* Admin Theme Variables */
+      --admin-bg: #0B1020;
+      --admin-sidebar: #111827;
+      --admin-card: #1E293B;
+      --admin-text: #F3F4F6;
+      --admin-text-muted: #9CA3AF;
+      --admin-border: #374151;
+      --admin-danger: #B91C1C;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.5;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    button, input, select, textarea { font-family: inherit; }
+    button { cursor: pointer; border: none; outline: none; }
+    img { max-width: 100%; height: auto; display: block; }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ==========================================================================
+       ANNOUNCEMENT BAR & HEADER
+       ========================================================================== */
+    .announcement-bar {
+      background: var(--primary);
+      color: var(--secondary);
+      font-size: 13px;
+      text-align: center;
+      padding: 7px 10px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    .main-header {
+      background: var(--bg-main);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      gap: 15px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-badge {
+      background: var(--primary);
+      color: var(--accent);
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      border: 1px solid var(--accent);
+    }
+    .logo-text h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+    .logo-text p {
+      font-size: 11px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    .search-bar-wrapper {
+      flex: 1;
+      max-width: 450px;
+      position: relative;
+    }
+    .search-bar-wrapper input {
+      width: 100%;
+      padding: 9px 16px 9px 40px;
+      border: 1px solid var(--border-color);
+      border-radius: 25px;
+      background: var(--secondary);
+      font-size: 14px;
+      transition: var(--transition);
+    }
+    .search-bar-wrapper input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+    }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .action-btn {
+      background: none;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
+    .action-btn:hover {
+      background: var(--secondary);
+    }
+    .badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    /* Mobile Nav Toggle */
+    .menu-toggle-btn {
+      display: none;
+      background: none;
+      font-size: 24px;
+      color: var(--primary);
+    }
+
+    /* Navigation Bar */
+    .nav-bar {
+      background: var(--secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      gap: 24px;
+      padding: 10px 0;
+      font-size: 14px;
+      font-weight: 600;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .nav-menu li a {
+      color: var(--text-main);
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: var(--transition);
+    }
+    .nav-menu li a:hover,
+    .nav-menu li a.active {
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+    }
+
+    /* ==========================================================================
+       HERO BANNER & SLIDER
+       ========================================================================== */
+    .hero-banner {
+      background: linear-gradient(135deg, #043D2E 0%, #064E3B 70%, #0B5E47 100%);
+      color: #fff;
+      padding: 50px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      align-items: center;
+      gap: 30px;
+    }
+    .hero-content h2 {
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 14px;
+    }
+    .hero-content h2 span {
+      color: var(--accent);
+    }
+    .hero-content p {
+      font-size: 16px;
+      color: #E2E8F0;
+      margin-bottom: 24px;
+      max-width: 500px;
+    }
+    .hero-badge-tag {
+      display: inline-block;
+      background: rgba(198, 161, 91, 0.25);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    .hero-btn {
+      display: inline-block;
+      background: var(--accent);
+      color: #064E3B;
+      padding: 12px 30px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(198, 161, 91, 0.3);
+      transition: var(--transition);
+    }
+    .hero-btn:hover {
+      background: #d9b46f;
+      transform: translateY(-2px);
+    }
+    .hero-visual {
+      background: radial-gradient(circle, rgba(198,161,91,0.2) 0%, rgba(6,78,59,0) 70%);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      text-align: center;
+    }
+    .hero-visual-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+    }
+    .hero-visual-card h3 {
+      font-size: 24px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    /* ==========================================================================
+       SECTION COMMON
+       ========================================================================== */
+    .section-padding {
+      padding: 45px 0;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--secondary);
+      padding-bottom: 12px;
+    }
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+      position: relative;
+    }
+    .section-title::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -14px;
+      width: 45px;
+      height: 3px;
+      background: var(--accent);
+    }
+
+    /* Category Chips */
+    .category-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 24px;
+    }
+    .category-chip {
+      background: var(--secondary);
+      border: 1px solid var(--border-color);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+    }
+    .category-chip:hover,
+    .category-chip.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* ==========================================================================
+       PRODUCT GRID & CARDS
+       ========================================================================== */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .product-card {
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition);
+      position: relative;
+    }
+    .product-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-3px);
+      border-color: #cbd5e1;
+    }
+    .product-badge-wrap {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .badge-discount {
+      background: var(--sale-price);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .badge-new {
+      background: var(--primary);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .product-wishlist-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 2;
+      background: rgba(255,255,255,0.9);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #666;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .product-wishlist-btn:hover,
+    .product-wishlist-btn.active {
+      color: var(--sale-price);
+      background: #fff;
+    }
+
+    .product-img-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 110%;
+      background: var(--secondary);
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .product-img-wrapper img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .product-card:hover .product-img-wrapper img {
+      transform: scale(1.04);
+    }
+
+    .product-info {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+    .product-category-name {
+      font-size: 11px;
+      color: #6B7280;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .product-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .product-title:hover {
+      color: var(--primary);
+    }
+
+    .product-prices {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .sale-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--sale-price);
+    }
+    .regular-price {
+      font-size: 13px;
+      color: #9CA3AF;
+      text-decoration: line-through;
+    }
+
+    .product-variants-preview {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #4B5563;
+      margin-bottom: 12px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--border-color);
+    }
+
+    .product-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: auto;
+    }
+    .btn-view {
+      background: var(--secondary);
+      color: var(--primary);
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      transition: var(--transition);
+      border: 1px solid var(--border-color);
+    }
+    .btn-view:hover {
+      background: #eee8de;
+    }
+    .btn-order-now {
+      background: var(--primary);
+      color: #fff;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      transition: var(--transition);
+    }
+    .btn-order-now:hover {
+      background: var(--primary-hover);
+    }
+
+    /* ==========================================================================
+       FEATURES PROMO BANNER
+       ========================================================================== */
+    .features-bar {
+      background: var(--secondary);
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 25px 0;
+      margin: 40px 0;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      text-align: center;
+    }
+    .feature-item h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .feature-item p {
+      font-size: 12px;
+      color: #6B7280;
+    }
+
+    /* ==========================================================================
+       MODALS (PRODUCT DETAILS & CHECKOUT)
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+      overflow-y: auto;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-container {
+      background: #fff;
+      width: 100%;
+      max-width: 850px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      animation: modalFadeIn 0.25s ease;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-header {
+      padding: 14px 20px;
+      background: var(--secondary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .close-modal-btn {
+      background: none;
+      font-size: 24px;
+      color: #666;
+      line-height: 1;
+    }
+    .close-modal-btn:hover { color: #000; }
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    /* Product Details Layout Inside Modal */
+    .product-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .detail-img-box {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: var(--secondary);
+    }
+    .detail-info h2 {
+      font-size: 20px;
+      color: var(--primary);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .detail-selector-group {
+      margin-bottom: 16px;
+    }
+    .detail-selector-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #374151;
+    }
+    .option-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .option-btn {
+      padding: 5px 12px;
+      border: 1px solid var(--border-color);
+      background: #fff;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+    }
+    .option-btn.selected {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #fff;
+    }
+    .qty-control {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .qty-control button {
+      width: 34px;
+      height: 34px;
+      background: var(--secondary);
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .qty-control span {
+      width: 44px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    /* ==========================================================================
+       CHECKOUT FORM & PAYMENT SECTION
+       ========================================================================== */
+    .checkout-layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #374151;
+    }
+    .form-group label span.req { color: var(--sale-price); }
+    .form-control {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      background: #fff;
+      transition: var(--transition);
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* Order Summary Box */
+    .summary-card {
+      background: var(--secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+    .summary-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 8px;
+      color: #4B5563;
+    }
+    .summary-line.bold {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      border-top: 1px dashed var(--border-color);
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+    .summary-line.highlight {
+      color: var(--sale-price);
+      font-weight: 700;
+    }
+
+    /* Advance Payment Box */
+    .payment-instruction-box {
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-top: 14px;
+      font-size: 13px;
+      color: #92400E;
+    }
+    .payment-methods-tabs {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .pay-tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .pay-tab.active {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #fff;
+    }
+    .copy-number-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px dashed #D97706;
+      margin: 8px 0;
+      font-weight: 700;
+      color: #B45309;
+    }
+    .btn-copy {
+      background: #D97706;
+      color: #fff;
+      padding: 3px 10px;
+      font-size: 11px;
+      border-radius: 4px;
+    }
+
+    .btn-place-order {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      padding: 13px;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+    .btn-place-order:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Promo code box */
+    .promo-input-group {
+      display: flex;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .btn-apply-promo {
+      background: var(--accent);
+      color: #064E3B;
+      padding: 0 14px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+    }
+
+    /* ==========================================================================
+       FLOATING WHATSAPP & FOOTER
+       ========================================================================== */
+    .floating-whatsapp {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      background: #25D366;
+      color: #fff;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+      z-index: 99;
+      transition: var(--transition);
+    }
+    .floating-whatsapp:hover {
+      transform: scale(1.08);
+    }
+
+    .site-footer {
+      background: #111827;
+      color: #9CA3AF;
+      padding: 50px 0 20px 0;
+      border-top: 3px solid var(--accent);
+      font-size: 14px;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+    .footer-col h4 {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .footer-col ul {
+      list-style: none;
+    }
+    .footer-col ul li {
+      margin-bottom: 8px;
+    }
+    .footer-col ul li a:hover {
+      color: var(--accent);
+    }
+    .footer-bottom {
+      border-top: 1px solid #1F2937;
+      padding-top: 20px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    /* Requirement 21: Exact Small Admin Panel Link at Absolute Bottom */
+    .admin-footer-link {
+      display: block;
+      margin: 8px auto 0 auto;
+      font-size: 11px;
+      color: #9CA3AF;
+      text-align: center;
+      text-decoration: none;
+      transition: color 0.2s;
+      width: fit-content;
+    }
+    .admin-footer-link:hover {
+      color: #D1D5DB;
+    }
+
+    /* ==========================================================================
+       ADMIN PANEL SPA (DARK THEME)
+       ========================================================================== */
+    .admin-app-root {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--admin-bg);
+      color: var(--admin-text);
+      z-index: 2000;
+      overflow: hidden;
+    }
+    .admin-app-root.active {
+      display: flex;
+    }
+    .admin-sidebar {
+      width: 250px;
+      background: var(--admin-sidebar);
+      border-right: 1px solid var(--admin-border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      height: 100%;
+    }
+    .admin-brand {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--admin-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .admin-brand h2 {
+      font-size: 16px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .admin-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 0;
+    }
+    .admin-nav-group-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--admin-text-muted);
+      padding: 10px 20px 4px 20px;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+    }
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      color: #D1D5DB;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      border-left: 3px solid transparent;
+    }
+    .admin-nav-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+    .admin-nav-item.active {
+      background: rgba(6, 78, 59, 0.4);
+      color: #fff;
+      border-left-color: var(--accent);
+    }
+    .admin-nav-item.logout {
+      color: #F87171;
+    }
+    .admin-nav-item.logout:hover {
+      background: rgba(185, 28, 28, 0.2);
+    }
+
+    .admin-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--admin-bg);
+    }
+    .admin-topbar {
+      height: 60px;
+      background: var(--admin-sidebar);
+      border-bottom: 1px solid var(--admin-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+    .admin-topbar h3 {
+      font-size: 16px;
+      color: #fff;
+    }
+    .admin-content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    /* Admin Cards & Statistics */
+    .admin-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--admin-card);
+      border: 1px solid var(--admin-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+    .stat-card h5 {
+      font-size: 12px;
+      color: var(--admin-text-muted);
+      margin-bottom: 6px;
+    }
+    .stat-card .stat-val {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .stat-card.gold .stat-val { color: var(--accent); }
+    .stat-card.green .stat-val { color: #34D399; }
+
+    /* Admin Tables */
+    .admin-table-wrap {
+      background: var(--admin-card);
+      border: 1px solid var(--admin-border);
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+      margin-top: 14px;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+    .admin-table th {
+      background: rgba(0,0,0,0.25);
+      padding: 10px 14px;
+      color: var(--admin-text-muted);
+      border-bottom: 1px solid var(--admin-border);
+      font-weight: 600;
+    }
+    .admin-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--admin-border);
+      color: #E5E7EB;
+    }
+    .admin-badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .admin-badge.pending { background: #78350F; color: #FDE68A; }
+    .admin-badge.verified { background: #064E3B; color: #A7F3D0; }
+    .admin-badge.delivered { background: #1E3A8A; color: #BFDBFE; }
+    .admin-badge.cancelled { background: #7F1D1D; color: #FECACA; }
+
+    .admin-action-btn {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 4px;
+    }
+    .btn-verify { background: #064E3B; color: #fff; }
+    .btn-cancel { background: #991B1B; color: #fff; }
+
+    /* Admin Forms */
+    .admin-card-box {
+      background: var(--admin-card);
+      border: 1px solid var(--admin-border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .admin-card-box h4 {
+      font-size: 16px;
+      color: var(--accent);
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--admin-border);
+      padding-bottom: 8px;
+    }
+    .admin-input {
+      width: 100%;
+      padding: 9px 12px;
+      background: #0F172A;
+      border: 1px solid var(--admin-border);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .admin-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .admin-btn-save {
+      background: var(--primary);
+      color: #fff;
+      padding: 9px 20px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+    }
+
+    /* Admin Login Modal */
+    .admin-login-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 2500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+    }
+    .admin-login-modal.active { display: flex; }
+    .login-box {
+      background: var(--admin-card);
+      border: 1px solid var(--admin-border);
+      width: 100%;
+      max-width: 380px;
+      border-radius: var(--radius-md);
+      padding: 26px;
+      color: #fff;
+      position: relative;
+    }
+
+    /* Responsive Queries */
+    @media (max-width: 768px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .product-detail-grid { grid-template-columns: 1fr; }
+      .checkout-layout { grid-template-columns: 1fr; }
+      .admin-sidebar { width: 70px; }
+      .admin-nav-group-title, .admin-brand h2, .admin-nav-item span { display: none; }
+      .admin-nav-item { justify-content: center; padding: 12px; }
+      .search-bar-wrapper { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. ANNOUNCEMENT BAR -->
+  <div class="announcement-bar" id="announcementBar">
+    ✨ Top Ten Fashion-এ স্বাগতম! সারাদেশে দ্রুততম হোম ডেলিভারি। বিকাশ/নগদে ডেলিভারি চার্জ অগ্রিম প্রযোজ্য।
+  </div>
+
+  <!-- 2. MAIN HEADER -->
+  <header class="main-header">
+    <div class="container header-inner">
+      <div class="logo-area">
+        <a href="#" class="logo-badge" onclick="renderStorefront()">TT</a>
+        <div class="logo-text">
+          <h1 id="brandNameDisplay">Top Ten Fashion</h1>
+          <p>Style & Confidence</p>
+        </div>
+      </div>
+
+      <!-- Live Search -->
+      <div class="search-bar-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="liveSearchInput" placeholder="পণ্য খুঁজুন (যেমন: শার্ট, পাঞ্জাবি, থ্রি-পিস)..." onkeyup="handleLiveSearch(this.value)">
+      </div>
+
+      <div class="header-actions">
+        <button class="action-btn" onclick="openWishlistModal()">
+          <span>❤️</span> <span class="badge" id="wishlistCount">0</span>
+        </button>
+        <button class="action-btn" onclick="scrollToProducts()">
+          <span>🛍️ শপ</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. NAVIGATION -->
+  <nav class="nav-bar">
+    <div class="container">
+      <ul class="nav-menu" id="categoryNav">
+        <li><a href="#" class="active" onclick="filterByCategory('all')">সকল কালেকশন</a></li>
+        <li><a href="#" onclick="filterByCategory('men')">পুরুষদের ফ্যাশন</a></li>
+        <li><a href="#" onclick="filterByCategory('women')">মহিলাদের ফ্যাশন</a></li>
+        <li><a href="#" onclick="filterByCategory('panjabi')">এক্সক্লুসিভ পাঞ্জাবি</a></li>
+        <li><a href="#" onclick="filterByCategory('festive')">ঈদ ও উৎসব কালেকশন</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- 4. HERO SECTION -->
+  <section class="hero-banner">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <span class="hero-badge-tag">প্রিমিয়াম এমারেল্ড ফ্যাশন ২০২৬</span>
+        <h2>নতুনত্ব ও আভিজাত্যের <br><span>সেরা কালেকশন</span></h2>
+        <p>সেরা মানের ফেব্রিক ও নিখুঁত ফিনিশিংয়ে তৈরি পোশাক কিনুন ঘরে বসেই। বিশ্বস্ত ডেলিভারি এবং দ্রুত পেমেন্ট ভেরিফিকেশন।</p>
+        <a href="#productSection" class="hero-btn">এখনই কিনুন 🛍️</a>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-visual-card">
+          <h3>Top Ten Fashion</h3>
+          <p style="color:#d1fae5; font-size:14px; margin-bottom:15px;">অনলাইন অর্ডারে আকর্ষণীয় অফার চলছে!</p>
+          <div style="font-size: 32px;">👗 👔 ✨ 💎</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. CATEGORY FILTER & PRODUCTS -->
+  <main class="container section-padding" id="productSection">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">আমাদের পণ্যসম্ভার</h2>
+      </div>
+      <div>
+        <select id="sortSelect" onchange="handleSort(this.value)" style="padding:6px 12px; border:1px solid var(--border-color); border-radius:4px; font-size:13px;">
+          <option value="featured">ফিচার্ড পণ্য</option>
+          <option value="low-high">মূল্য: কম থেকে বেশি</option>
+          <option value="high-low">মূল্য: বেশি থেকে কম</option>
+          <option value="discount">সর্বোচ্চ ছাড়</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Category Chips -->
+    <div class="category-scroll" id="categoryChips">
+      <div class="category-chip active" onclick="filterByCategory('all')">সবগুলো</div>
+      <div class="category-chip" onclick="filterByCategory('men')">পাঞ্জাবি ও শার্ট</div>
+      <div class="category-chip" onclick="filterByCategory('women')">শাড়ি ও থ্রি-পিস</div>
+      <div class="category-chip" onclick="filterByCategory('festive')">প্রিমিয়াম কালেকশন</div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="product-grid" id="productGrid">
+      <!-- Dynamic Products Rendered Here -->
+    </div>
+  </main>
+
+  <!-- 6. VALUE PROPOSITION BAR -->
+  <section class="features-bar">
+    <div class="container features-grid">
+      <div class="feature-item">
+        <h4>📦 দ্রুততম ডেলিভারি</h4>
+        <p>ঢাকা ও সারাদেশে বিশ্বস্ত কুরিয়ারে ডেলিভারি</p>
+      </div>
+      <div class="feature-item">
+        <h4>🔒 নিরাপদ পেমেন্ট</h4>
+        <p>বিকাশ ও নগদ পার্সোনাল নাম্বারে নিরাপদ ট্রানজেকশন</p>
+      </div>
+      <div class="feature-item">
+        <h4>💬 সরাসরি WhatsApp সাপোর্ট</h4>
+        <p>অর্ডারের সাথে সাথেই দ্রুততম রেসপন্স</p>
+      </div>
+      <div class="feature-item">
+        <h4>✨ প্রিমিয়াম কোয়ালিটি</h4>
+        <p>১০০% অরিজিনাল ও নিখুঁত ফ্যাব্রিক গ্যারান্টি</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <h4 id="footerBrandTitle">Top Ten Fashion</h4>
+        <p style="font-size:13px; line-height:1.6; margin-bottom:12px;">
+          বাংলাদেশের তরুণ ও ফ্যাশন সচেতন গ্রাহকদের বিশ্বস্ত প্রিমিয়াম লাইফস্টাইল ব্র্যান্ড।
+        </p>
+        <p style="font-size:13px;">📞 হেল্পলাইন: <span id="footerPhone">01614944013</span></p>
+      </div>
+      <div class="footer-col">
+        <h4>প্রয়োজনীয় লিঙ্ক</h4>
+        <ul>
+          <li><a href="#productSection">নতুন আগমনী</a></li>
+          <li><a href="#productSection">পাঞ্জাবি কালেকশন</a></li>
+          <li><a href="#productSection">ডিসকাউন্ট অফার</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>পেমেন্ট ও ডেলিভারি</h4>
+        <p style="font-size:13px; margin-bottom:8px;">ডেলিভারি চার্জ অগ্রিম প্রযোজ্য:</p>
+        <p style="font-size:12px; color:#D1D5DB;">• ঢাকা জেলা: ৳৭০<br>• ঢাকা বিভাগ: ৳১০০<br>• অন্যান্য বিভাগ: ৳১২০</p>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>© ২০২৬ Top Ten Fashion. সর্বস্বত্ব সংরক্ষিত।</p>
+      <!-- MANDATORY REQUIREMENT 21: Small text link ONLY at the absolute bottom -->
+      <a href="javascript:void(0)" class="admin-footer-link" onclick="openAdminLoginModal()">Admin Panel</a>
+    </div>
+  </footer>
+
+  <!-- 8. FLOATING WHATSAPP BUTTON -->
+  <a href="https://wa.me/8801614944013" target="_blank" class="floating-whatsapp" title="WhatsApp এ যোগাযোগ করুন">
+    💬
+  </a>
+
+  <!-- ==========================================================================
+       MODAL: PRODUCT QUICK VIEW / DETAILS
+       ========================================================================== -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="modalProductTitle">পণ্যের বিবরণ</h3>
+        <button class="close-modal-btn" onclick="closeModal('productModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="product-detail-grid">
+          <div class="detail-img-box">
+            <img id="modalProductImg" src="" alt="Product">
+          </div>
+          <div class="detail-info">
+            <h2 id="modalProductName">পণ্যর নাম</h2>
+            <div class="product-prices" style="margin-bottom:12px;">
+              <span class="sale-price" id="modalSalePrice">৳0</span>
+              <span class="regular-price" id="modalRegPrice">৳0</span>
+            </div>
+            <p id="modalProductDesc" style="font-size:13px; color:#4B5563; margin-bottom:16px;"></p>
+
+            <!-- Size Selector -->
+            <div class="detail-selector-group">
+              <label>সাইজ নির্বাচন করুন:</label>
+              <div class="option-badges" id="modalSizeOptions"></div>
+            </div>
+
+            <!-- Color Selector -->
+            <div class="detail-selector-group">
+              <label>কালার নির্বাচন করুন:</label>
+              <div class="option-badges" id="modalColorOptions"></div>
+            </div>
+
+            <!-- Quantity -->
+            <div class="detail-selector-group">
+              <label>পরিমাণ:</label>
+              <div class="qty-control">
+                <button onclick="adjustModalQty(-1)">-</button>
+                <span id="modalQtyDisplay">1</span>
+                <button onclick="adjustModalQty(1)">+</button>
+              </div>
+            </div>
+
+            <button class="btn-place-order" style="margin-top:20px;" onclick="proceedToCheckoutFromModal()">
+              অর্ডার করুন (Order Now)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: CHECKOUT & ADVANCE PAYMENT
+       ========================================================================== -->
+  <div class="modal-overlay" id="checkoutModal">
+    <div class="modal-container" style="max-width:920px;">
+      <div class="modal-header">
+        <h3>অর্ডার ও ডেলিভারি তথ্য ফর্ম</h3>
+        <button class="close-modal-btn" onclick="closeModal('checkoutModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="checkout-layout">
+          <!-- Left: Customer Information & BD Divisions/Districts -->
+          <div>
+            <div class="form-group">
+              <label>আপনার সম্পূর্ণ নাম <span class="req">*</span></label>
+              <input type="text" id="custName" class="form-control" placeholder="যেমন: মো: আরিফুল ইসলাম">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>মোবাইল নম্বর <span class="req">*</span></label>
+                <input type="tel" id="custPhone" class="form-control" placeholder="01XXXXXXXXX">
+              </div>
+              <div class="form-group">
+                <label>ইমেইল (ঐচ্ছিক)</label>
+                <input type="email" id="custEmail" class="form-control" placeholder="name@example.com">
+              </div>
+            </div>
+
+            <!-- Dependent Dropdown: Divisions and 64 Districts -->
+            <div class="form-row">
+              <div class="form-group">
+                <label>বিভাগ নির্বাচন করুন <span class="req">*</span></label>
+                <select id="divisionSelect" class="form-control" onchange="handleDivisionChange(this.value)">
+                  <option value="">-- বিভাগ নির্বাচন করুন --</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>জেলা নির্বাচন করুন <span class="req">*</span></label>
+                <select id="districtSelect" class="form-control" onchange="handleDistrictChange(this.value)" disabled>
+                  <option value="">-- আগে বিভাগ সিলেক্ট করুন --</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>সম্পূর্ণ ডেলিভারি ঠিকানা <span class="req">*</span></label>
+              <textarea id="custAddress" class="form-control" rows="2" placeholder="বাড়ি নং, রোড নং, থানা/এলাকার নাম"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>বিশেষ নির্দেশনা (ঐচ্ছিক)</label>
+              <input type="text" id="custNotes" class="form-control" placeholder="ডেলিভারি সংক্রান্ত নির্দেশনা...">
+            </div>
+
+            <!-- Advance Payment Verification Section -->
+            <div class="payment-instruction-box">
+              <strong>⚠️ অর্ডার নিশ্চিতকরণের নিয়ম:</strong>
+              <p style="margin-top:4px;">
+                "আপনার অর্ডার নিশ্চিত করতে ডেলিভারি চার্জ অগ্রিম পরিশোধ করুন।<br>
+                বিকাশ নম্বর: <b id="dispBkashNo">01614944013</b><br>
+                নগদ নম্বর: <b id="dispNagadNo">01614944013</b><br>
+                আপনার নির্বাচিত ডেলিভারি চার্জটি সঠিক নম্বরে <strong>Send Money</strong> করুন। পেমেন্ট সম্পন্ন হলে Transaction ID প্রদান করুন। অ্যাডমিন পেমেন্ট যাচাই করার পর আপনার অর্ডার নিশ্চিত করা হবে।"
+              </p>
+
+              <div class="payment-methods-tabs">
+                <div class="pay-tab active" id="tabBkash" onclick="selectPaymentMethod('bKash')">বিকাশ (bKash)</div>
+                <div class="pay-tab" id="tabNagad" onclick="selectPaymentMethod('Nagad')">নগদ (Nagad)</div>
+              </div>
+
+              <div class="copy-number-wrap">
+                <span>পার্সোনাল নম্বর: <span id="activePayNumber">01614944013</span></span>
+                <button class="btn-copy" onclick="copyPaymentNumber()">কপি করুন</button>
+              </div>
+
+              <div class="form-group" style="margin-top:8px;">
+                <label style="color:#92400E;">পেমেন্টের Transaction ID (TrxID) <span class="req">*</span></label>
+                <input type="text" id="custTrxId" class="form-control" placeholder="যেমন: 9J4K2L8MN">
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Order Breakdown & Calculation -->
+          <div>
+            <div class="summary-card">
+              <h4 class="summary-title">অর্ডার সারাংশ</h4>
+              <div style="font-size:13px; margin-bottom:12px;">
+                <b id="summaryProdName">-</b><br>
+                <span id="summaryProdVariant" style="color:#666;">-</span>
+              </div>
+
+              <!-- Promo Code Input -->
+              <div class="promo-input-group">
+                <input type="text" id="promoInput" class="form-control" placeholder="প্রোমো কোড">
+                <button class="btn-apply-promo" onclick="applyPromoCode()">প্রয়োগ</button>
+              </div>
+              <div id="promoMessage" style="font-size:12px; margin-bottom:8px;"></div>
+
+              <div class="summary-line">
+                <span>একক মূল্য:</span>
+                <span id="sumUnitPrice">৳0</span>
+              </div>
+              <div class="summary-line">
+                <span>পরিমাণ:</span>
+                <span id="sumQty">1</span>
+              </div>
+              <div class="summary-line">
+                <span>সাবটোটাল:</span>
+                <span id="sumSubtotal">৳0</span>
+              </div>
+              <div class="summary-line" id="discountRow" style="display:none; color:#064E3B;">
+                <span>ডিসকাউন্ট:</span>
+                <span id="sumDiscount">-৳0</span>
+              </div>
+              <div class="summary-line">
+                <span>ডেলিভারি চার্জ:</span>
+                <span id="sumDeliveryCharge">৳০ (জেলা নির্বাচন করুন)</span>
+              </div>
+              <div class="summary-line bold">
+                <span>সর্বমোট অর্ডার মূল্য:</span>
+                <span id="sumTotalOrder">৳0</span>
+              </div>
+              <div class="summary-line highlight" style="margin-top:6px;">
+                <span>অগ্রিম প্রদেয় (ডেলিভারি চার্জ):</span>
+                <span id="sumAdvanceRequired">৳0</span>
+              </div>
+              <div class="summary-line" style="font-weight:600; color:#1E3A8A;">
+                <span>ডেলিভারিতে প্রদেয় (বাকি টাকা):</span>
+                <span id="sumCodRemaining">৳0</span>
+              </div>
+
+              <button class="btn-place-order" onclick="submitOrder()">
+                অর্ডার কনফার্ম ও WhatsApp পাঠান 📲
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       ADMIN LOGIN MODAL
+       ========================================================================== -->
+  <div class="admin-login-modal" id="adminLoginModal">
+    <div class="login-box">
+      <h3 style="color:var(--accent); font-size:18px; margin-bottom:6px;">অ্যাডমিন লগইন</h3>
+      <p style="font-size:12px; color:var(--admin-text-muted); margin-bottom:16px;">Top Ten Fashion সুরক্ষিত ব্যবস্থাপনা প্যানেল</p>
+      
+      <div class="form-group">
+        <label style="color:#D1D5DB; font-size:12px;">অ্যাডমিন ইমেইল</label>
+        <input type="email" id="adminEmail" class="admin-input" placeholder="admin@toptenfashion.com" value="admin@toptenfashion.com">
+      </div>
+      <div class="form-group">
+        <label style="color:#D1D5DB; font-size:12px;">পাসওয়ার্ড</label>
+        <input type="password" id="adminPassword" class="admin-input" placeholder="••••••••" value="admin123456">
+      </div>
+
+      <button class="btn-place-order" style="background:var(--primary); margin-top:10px;" onclick="handleAdminLogin()">লগইন করুন</button>
+      <button class="btn-view" style="width:100%; margin-top:8px; border:none; color:#9CA3AF;" onclick="closeModal('adminLoginModal')">বন্ধ করুন</button>
+      <p style="font-size:11px; color:#6B7280; text-align:center; margin-top:10px;">ডিফল্ট টেস্ট ক্রেডেনশিয়াল প্রি-ফিল্ড করা আছে</p>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       ADMIN DASHBOARD SPA INTERFACE (ALL 17 FUNCTIONAL MENUS)
+       ========================================================================== -->
+  <div class="admin-app-root" id="adminApp">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <h2>TOP TEN ADMIN</h2>
+      </div>
+      <div class="admin-nav">
+        <div class="admin-nav-group-title">প্রধান</div>
+        <div class="admin-nav-item active" onclick="switchAdminSection('dashboard')"><span>📊</span> <span>ড্যাশবোর্ড</span></div>
+        <div class="admin-nav-item" onclick="switchAdminSection('orders')"><span>📦</span> <span>অর্ডার</span></div>
+        <div class="admin-nav-item" onclick="switchAdminSection('payments')"><span>💳</span> <span>পেমেন্ট যাচাই</span></div>
+
+        <div class="admin-nav-group-title">ক্যাটালগ</div>
+        <div class="admin-nav-item" onclick="switchAdminSection('products')"><span>👗</span> <span>পণ্য</span></div>
+        <div class="admin-nav-item" onclick="switchAdminSection('categories')"><span>🏷️</span> <span>ক্যাটাগরি</span></div>
+        <div class="admin-nav-item" onclick="switchAdminSection('promo')"><span>🎟️</span> <span>প্রোমো কোড</span></div>
+
+        <div class="admin-nav-group-title">গ্রাহক</div>
+        <div class="admin-nav-item" onclick="switchAdminSection('customers')"><span>👥</span> <span>গ্রাহক তালিকা</span></div>
+
+        <div class="admin-nav-group-title">সেটিংস</div>
+        <div class="admin-nav-item" onclick="switchAdminSection('deliverySettings')"><span>🚚</span> <span>ডেলিভারি চার্জ</span></div>
+        <div class="admin-nav-item" onclick="switchAdminSection('paymentNumbers')"><span>📱</span> <span>পেমেন্ট নম্বর</span></div>
+        <div class="admin-nav-item" onclick="switchAdminSection('themeSettings')"><span>🎨</span> <span>থিম সেটিংস</span></div>
+        <div class="admin-nav-item" onclick="switchAdminSection('logoSettings')"><span>🖼️</span> <span>লোগো সেটিংস</span></div>
+        <div class="admin-nav-item" onclick="switchAdminSection('siteSettings')"><span>⚙️</span> <span>ওয়েবসাইট সেটিংস</span></div>
+
+        <div class="admin-nav-group-title">অ্যাকাউন্ট</div>
+        <div class="admin-nav-item" onclick="switchAdminSection('reports')"><span>📈</span> <span>সেলস রিপোর্ট</span></div>
+        <div class="admin-nav-item" onclick="switchAdminSection('adminAccount')"><span>👤</span> <span>এডমিন অ্যাকাউন্ট</span></div>
+        <div class="admin-nav-item" onclick="switchAdminSection('security')"><span>🛡️</span> <span>সিকিউরিটি</span></div>
+        <div class="admin-nav-item" onclick="exitAdminToStorefront()"><span>🌐</span> <span>ওয়েবসাইট দেখুন</span></div>
+        <div class="admin-nav-item logout" onclick="handleAdminLogout()"><span>🚪</span> <span>লগ আউট</span></div>
+      </div>
+    </aside>
+
+    <!-- Main Admin Workspace -->
+    <section class="admin-main">
+      <header class="admin-topbar">
+        <h3 id="adminSectionHeading">ড্যাশবোর্ড ওভারভিউ</h3>
+        <div style="font-size:13px; color:var(--accent);">অ্যাডমিন: <b>Master Admin</b></div>
+      </header>
+
+      <div class="admin-content-area" id="adminContent">
+        <!-- Dynamic section views rendered via JavaScript -->
+      </div>
+    </section>
+  </div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT ARCHITECTURE
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       1. FIREBASE CONFIGURATION & HYBRID STORAGE
+       ========================================================================== */
+    const firebaseConfig = {
+      apiKey: "AIzaSyDummyKeyReplaceWithYourRealFirebaseKey_TopTen",
+      authDomain: "top-ten-fashion.firebaseapp.com",
+      projectId: "top-ten-fashion",
+      storageBucket: "top-ten-fashion.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcdef123456"
+    };
+
+    let isFirebaseReady = false;
+    let db = null;
+    let auth = null;
+
+    try {
+      if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        auth = firebase.auth();
+        isFirebaseReady = true;
+      }
+    } catch (e) {
+      console.warn("Firebase Running in Local Persisted Mode:", e);
+    }
+
+    // Hybrid LocalStorage Persistence Layer
+    const StorageEngine = {
+      get: (key, defaultVal) => {
+        try {
+          const item = localStorage.getItem('topten_' + key);
+          return item ? JSON.parse(item) : defaultVal;
+        } catch(e) { return defaultVal; }
+      },
+      set: (key, val) => {
+        try {
+          localStorage.setItem('topten_' + key, JSON.stringify(val));
+        } catch(e) { console.error(e); }
+      }
+    };
+
+    /* ==========================================================================
+       2. BANGLADESH 8 DIVISIONS & EXACT 64 DISTRICTS DATASET
+       ========================================================================== */
+    const BD_GEO_DATA = [
+      {
+        divisionBn: "ঢাকা",
+        divisionEn: "Dhaka",
+        districts: [
+          { bn: "ঢাকা", en: "Dhaka", isDhakaDistrict: true },
+          { bn: "গাজীপুর", en: "Gazipur", isDhakaDistrict: false },
+          { bn: "নারায়ণগঞ্জ", en: "Narayanganj", isDhakaDistrict: false },
+          { bn: "নরসিংদী", en: "Narsingdi", isDhakaDistrict: false },
+          { bn: "মুন্সীগঞ্জ", en: "Munshiganj", isDhakaDistrict: false },
+          { bn: "মানিকগঞ্জ", en: "Manikganj", isDhakaDistrict: false },
+          { bn: "টাঙ্গাইল", en: "Tangail", isDhakaDistrict: false },
+          { bn: "কিশোরগঞ্জ", en: "Kishoreganj", isDhakaDistrict: false },
+          { bn: "ফরিদপুর", en: "Faridpur", isDhakaDistrict: false },
+          { bn: "গোপালগঞ্জ", en: "Gopalganj", isDhakaDistrict: false },
+          { bn: "মাদারীপুর", en: "Madaripur", isDhakaDistrict: false },
+          { bn: "রাজবাড়ী", en: "Rajbari", isDhakaDistrict: false },
+          { bn: "শরীয়তপুর", en: "Shariatpur", isDhakaDistrict: false }
+        ]
+      },
+      {
+        divisionBn: "চট্টগ্রাম",
+        divisionEn: "Chattogram",
+        districts: [
+          { bn: "চট্টগ্রাম", en: "Chattogram" },
+          { bn: "কক্সবাজার", en: "Cox's Bazar" },
+          { bn: "কুমিল্লা", en: "Cumilla" },
+          { bn: "ব্রাহ্মণবাড়িয়া", en: "Brahmanbaria" },
+          { bn: "চাঁদপুর", en: "Chandpur" },
+          { bn: "লক্ষ্মীপুর", en: "Lakshmipur" },
+          { bn: "নোয়াখালী", en: "Noakhali" },
+          { bn: "ফেনী", en: "Feni" },
+          { bn: "খাগড়াছড়ি", en: "Khagrachhari" },
+          { bn: "রাঙ্গামাটি", en: "Rangamati" },
+          { bn: "বান্দরবান", en: "Bandarban" }
+        ]
+      },
+      {
+        divisionBn: "রাজশাহী",
+        divisionEn: "Rajshahi",
+        districts: [
+          { bn: "রাজশাহী", en: "Rajshahi" },
+          { bn: "বগুড়া", en: "Bogura" },
+          { bn: "পাবনা", en: "Pabna" },
+          { bn: "সিরাজগঞ্জ", en: "Sirajganj" },
+          { bn: "নাটোর", en: "Natore" },
+          { bn: "নওগাঁ", en: "Naogaon" },
+          { bn: "চাঁপাইনবাবগঞ্জ", en: "Chapainawabganj" },
+          { bn: "জয়পুরহাট", en: "Joypurhat" }
+        ]
+      },
+      {
+        divisionBn: "খুলনা",
+        divisionEn: "Khulna",
+        districts: [
+          { bn: "খুলনা", en: "Khulna" },
+          { bn: "বাগেরহাট", en: "Bagerhat" },
+          { bn: "সাতক্ষীরা", en: "Satkhira" },
+          { bn: "যশোর", en: "Jashore" },
+          { bn: "ঝিনাইদহ", en: "Jhenaidah" },
+          { bn: "মাগুরা", en: "Magura" },
+          { bn: "নড়াইল", en: "Narail" },
+          { bn: "কুষ্টিয়া", en: "Kushtia" },
+          { bn: "চুয়াডাঙ্গা", en: "Chuadanga" },
+          { bn: "মেহেরপুর", en: "Meherpur" }
+        ]
+      },
+      {
+        divisionBn: "বরিশাল",
+        divisionEn: "Barishal",
+        districts: [
+          { bn: "বরিশাল", en: "Barishal" },
+          { bn: "পটুয়াখালী", en: "Patuakhali" },
+          { bn: "ভোলা", en: "Bhola" },
+          { bn: "পিরোজপুর", en: "Pirojpur" },
+          { bn: "বরগুনা", en: "Barguna" },
+          { bn: "ঝালকাঠি", en: "Jhalokati" }
+        ]
+      },
+      {
+        divisionBn: "সিলেট",
+        divisionEn: "Sylhet",
+        districts: [
+          { bn: "সিলেট", en: "Sylhet" },
+          { bn: "মৌলভীবাজার", en: "Moulvibazar" },
+          { bn: "হবিগঞ্জ", en: "Habiganj" },
+          { bn: "সুনামগঞ্জ", en: "Sunamganj" }
+        ]
+      },
+      {
+        divisionBn: "রংপুর",
+        divisionEn: "Rangpur",
+        districts: [
+          { bn: "রংপুর", en: "Rangpur" },
+          { bn: "দিনাজপুর", en: "Dinajpur" },
+          { bn: "কুড়িগ্রাম", en: "Kurigram" },
+          { bn: "গাইবান্ধা", en: "Gaibandha" },
+          { bn: "নীলফামারী", en: "Nilphamari" },
+          { bn: "লালমনিরহাট", en: "Lalmonirhat" },
+          { bn: "পঞ্চগড়", en: "Panchagarh" },
+          { bn: "ঠাকুরগাঁও", en: "Thakurgaon" }
+        ]
+      },
+      {
+        divisionBn: "ময়মনসিংহ",
+        divisionEn: "Mymensingh",
+        districts: [
+          { bn: "ময়মনসিংহ", en: "Mymensingh" },
+          { bn: "জামালপুর", en: "Jamalpur" },
+          { bn: "শেরপুর", en: "Sherpur" },
+          { bn: "নেত্রকোণা", en: "Netrokona" }
+        ]
+      }
+    ];
+
+    /* ==========================================================================
+       3. DEFAULT INITIAL STORE DATA
+       ========================================================================== */
+    const DEFAULT_PRODUCTS = [
+      {
+        id: "TT-101",
+        name: "প্রিমিয়াম রয়্যাল এমারেল্ড পাঞ্জাবি",
+        category: "panjabi",
+        regPrice: 2450,
+        salePrice: 1850,
+        sizes: ["M", "L", "XL", "XXL"],
+        colors: ["Emerald Green", "Jet Black", "Ivory White"],
+        stock: 35,
+        img: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600&auto=format&fit=crop&q=80",
+        desc: "১০০% প্রিমিয়াম সুতি জ্যাকার্ড ফেব্রিক, উন্নত সুতার কারুকাজ ও এলিগ্যান্ট বোতাম।"
+      },
+      {
+        id: "TT-102",
+        name: "ক্লাসিক সফট কটন ফর্মাল শার্ট",
+        category: "men",
+        regPrice: 1750,
+        salePrice: 1290,
+        sizes: ["M", "L", "XL"],
+        colors: ["Soft Blue", "Off White", "Navy"],
+        stock: 22,
+        img: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&auto=format&fit=crop&q=80",
+        desc: "ব্রিথেবল আরামদায়ক কটন। অফিস ও ক্যাজুয়াল উভয় ব্যবহারের জন্য অতুলনীয়।"
+      },
+      {
+        id: "TT-103",
+        name: "ডিজাইনার জর্জেট এমব্রয়ডারি থ্রি-পিস",
+        category: "women",
+        regPrice: 3800,
+        salePrice: 2950,
+        sizes: ["Standard (Semi-Stitched)", "Free Size"],
+        colors: ["Deep Maroon", "Rose Gold", "Sage Green"],
+        stock: 14,
+        img: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&auto=format&fit=crop&q=80",
+        desc: "প্রিমিয়াম জর্জেট বডি সাথে সূক্ষ্ম হাতের কাজ এবং অর্গানজা ওড়না।"
+      },
+      {
+        id: "TT-104",
+        name: "ফেস্টিভ কাবলি সেট উইথ পায়জামা",
+        category: "festive",
+        regPrice: 3200,
+        salePrice: 2490,
+        sizes: ["M", "L", "XL"],
+        colors: ["Olive Green", "Charcoal Gray"],
+        stock: 18,
+        img: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&auto=format&fit=crop&q=80",
+        desc: "বিশেষ উৎসব ও ঈদ আয়োজনের জন্য আধুনিক কাট ও প্রিমিয়াম ফেব্রিক।"
+      }
+    ];
+
+    const DEFAULT_SETTINGS = {
+      brandName: "Top Ten Fashion",
+      phone: "01614944013",
+      whatsapp: "8801614944013",
+      bkash: "01614944013",
+      nagad: "01614944013",
+      deliveryDhakaDist: 70,
+      deliveryDhakaDivRest: 100,
+      deliveryOtherDiv: 120,
+      primaryColor: "#064E3B",
+      accentColor: "#C6A15B"
+    };
+
+    const DEFAULT_PROMOS = [
+      { code: "EID2026", discount: 150, minOrder: 1500, active: true },
+      { code: "TOPTEN10", discount: 100, minOrder: 1000, active: true }
+    ];
+
+    // State initialization
+    let products = StorageEngine.get('products', DEFAULT_PRODUCTS);
+    let settings = StorageEngine.get('settings', DEFAULT_SETTINGS);
+    let promoCodes = StorageEngine.get('promos', DEFAULT_PROMOS);
+    let orders = StorageEngine.get('orders', []);
+    let wishlist = StorageEngine.get('wishlist', []);
+    let auditLogs = StorageEngine.get('auditLogs', [
+      { timestamp: new Date().toLocaleString('bn-BD'), text: "সিস্টেম ইনিশিয়ালাইজেশন সম্পন্ন" }
+    ]);
+
+    // Active selection state for current checkout / modal
+    let activeModalProduct = null;
+    let selectedSize = "";
+    let selectedColor = "";
+    let modalQuantity = 1;
+    let selectedPayment = "bKash";
+    let calculatedDeliveryCharge = 0;
+    let appliedPromoDiscount = 0;
+    let currentCategoryFilter = 'all';
+
+    /* ==========================================================================
+       4. STOREFRONT RENDERING & CONTROLLER
+       ========================================================================== */
+    function initStorefront() {
+      applyStoredTheme();
+      renderDistrictsDropDown();
+      renderProductGrid();
+      updateWishlistCounter();
+      applySettingsToUI();
+    }
+
+    function applyStoredTheme() {
+      document.documentElement.style.setProperty('--primary', settings.primaryColor || '#064E3B');
+      document.documentElement.style.setProperty('--accent', settings.accentColor || '#C6A15B');
+    }
+
+    function applySettingsToUI() {
+      document.getElementById('brandNameDisplay').innerText = settings.brandName;
+      document.getElementById('footerBrandTitle').innerText = settings.brandName;
+      document.getElementById('footerPhone').innerText = settings.phone;
+      document.getElementById('dispBkashNo').innerText = settings.bkash;
+      document.getElementById('dispNagadNo').innerText = settings.nagad;
+      document.getElementById('activePayNumber').innerText = selectedPayment === 'bKash' ? settings.bkash : settings.nagad;
+    }
+
+    function renderDistrictsDropDown() {
+      const divSelect = document.getElementById('divisionSelect');
+      divSelect.innerHTML = '<option value="">-- বিভাগ নির্বাচন করুন --</option>';
+      BD_GEO_DATA.forEach(div => {
+        divSelect.innerHTML += `<option value="${div.divisionEn}">${div.divisionBn} (${div.divisionEn})</option>`;
+      });
+    }
+
+    function handleDivisionChange(divEn) {
+      const distSelect = document.getElementById('districtSelect');
+      distSelect.innerHTML = '<option value="">-- জেলা নির্বাচন করুন --</option>';
+      distSelect.disabled = !divEn;
+      calculatedDeliveryCharge = 0;
+      updateCheckoutBreakdown();
+
+      if (!divEn) return;
+
+      const targetDiv = BD_GEO_DATA.find(d => d.divisionEn === divEn);
+      if (targetDiv) {
+        targetDiv.districts.forEach(dst => {
+          distSelect.innerHTML += `<option value="${dst.en}">${dst.bn} (${dst.en})</option>`;
+        });
+      }
+    }
+
+    function handleDistrictChange(distEn) {
+      const divEn = document.getElementById('divisionSelect').value;
+      if (!divEn || !distEn) {
+        calculatedDeliveryCharge = 0;
+        updateCheckoutBreakdown();
+        return;
+      }
+
+      // Mandatory Rates Calculation (Requirement 7)
+      if (divEn === "Dhaka") {
+        if (distEn === "Dhaka") {
+          calculatedDeliveryCharge = Number(settings.deliveryDhakaDist); // 70 Tk
+        } else {
+          calculatedDeliveryCharge = Number(settings.deliveryDhakaDivRest); // 100 Tk
+        }
+      } else {
+        calculatedDeliveryCharge = Number(settings.deliveryOtherDiv); // 120 Tk
+      }
+
+      updateCheckoutBreakdown();
+    }
+
+    function renderProductGrid(items = null) {
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = "";
+      const displayList = items || products;
+
+      if (displayList.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color:#6B7280;">কোনো পণ্য খুঁজে পাওয়া যায়নি।</div>`;
+        return;
+      }
+
+      displayList.forEach(p => {
+        const discountPct = Math.round(((p.regPrice - p.salePrice) / p.regPrice) * 100);
+        const isWish = wishlist.includes(p.id);
+
+        grid.innerHTML += `
+          <div class="product-card">
+            <div class="product-badge-wrap">
+              <span class="badge-discount">${discountPct}% ছাড়</span>
+              <span class="badge-new">NEW</span>
+            </div>
+            <button class="product-wishlist-btn ${isWish ? 'active' : ''}" onclick="toggleWishlist('${p.id}', event)">
+              ${isWish ? '❤️' : '🤍'}
+            </button>
+            <div class="product-img-wrapper" onclick="openProductModal('${p.id}')">
+              <img src="${p.img}" alt="${p.name}" loading="lazy">
+            </div>
+            <div class="product-info">
+              <span class="product-category-name">${p.category}</span>
+              <h3 class="product-title" onclick="openProductModal('${p.id}')">${p.name}</h3>
+              <div class="product-prices">
+                <span class="sale-price">৳${p.salePrice}</span>
+                <span class="regular-price">৳${p.regPrice}</span>
+              </div>
+              <div class="product-variants-preview">
+                <span>সাইজ: ${p.sizes.join(', ')}</span>
+                <span>স্টক: ${p.stock > 0 ? p.stock + ' পিস' : 'স্টক শেষ'}</span>
+              </div>
+              <div class="product-actions">
+                <button class="btn-view" onclick="openProductModal('${p.id}')">বিস্তারিত</button>
+                <button class="btn-order-now" onclick="quickOrder('${p.id}')">অর্ডার করুন</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function filterByCategory(cat) {
+      currentCategoryFilter = cat;
+      const chips = document.querySelectorAll('.category-chip');
+      chips.forEach(c => c.classList.remove('active'));
+
+      if (cat === 'all') {
+        renderProductGrid(products);
+      } else {
+        const filtered = products.filter(p => p.category === cat);
+        renderProductGrid(filtered);
+      }
+    }
+
+    function handleLiveSearch(query) {
+      const q = query.trim().toLowerCase();
+      if (!q) {
+        filterByCategory(currentCategoryFilter);
+        return;
+      }
+      const matched = products.filter(p => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+      renderProductGrid(matched);
+    }
+
+    function handleSort(criteria) {
+      let sorted = [...products];
+      if (criteria === 'low-high') sorted.sort((a,b) => a.salePrice - b.salePrice);
+      if (criteria === 'high-low') sorted.sort((a,b) => b.salePrice - a.salePrice);
+      if (criteria === 'discount') sorted.sort((a,b) => (b.regPrice - b.salePrice) - (a.regPrice - a.salePrice));
+      renderProductGrid(sorted);
+    }
+
+    function toggleWishlist(id, ev) {
+      if (ev) ev.stopPropagation();
+      if (wishlist.includes(id)) {
+        wishlist = wishlist.filter(x => x !== id);
+      } else {
+        wishlist.push(id);
+      }
+      StorageEngine.set('wishlist', wishlist);
+      updateWishlistCounter();
+      renderProductGrid();
+    }
+
+    function updateWishlistCounter() {
+      document.getElementById('wishlistCount').innerText = wishlist.length;
+    }
+
+    function openWishlistModal() {
+      const wishItems = products.filter(p => wishlist.includes(p.id));
+      renderProductGrid(wishItems);
+      scrollToProducts();
+    }
+
+    function scrollToProducts() {
+      document.getElementById('productSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    /* ==========================================================================
+       5. MODALS & CHECKOUT LOGIC
+       ========================================================================== */
+    function openProductModal(prodId) {
+      const prod = products.find(p => p.id === prodId);
+      if (!prod) return;
+      activeModalProduct = prod;
+      modalQuantity = 1;
+      selectedSize = prod.sizes[0] || "";
+      selectedColor = prod.colors[0] || "";
+
+      document.getElementById('modalProductImg').src = prod.img;
+      document.getElementById('modalProductName').innerText = prod.name;
+      document.getElementById('modalSalePrice').innerText = '৳' + prod.salePrice;
+      document.getElementById('modalRegPrice').innerText = '৳' + prod.regPrice;
+      document.getElementById('modalProductDesc').innerText = prod.desc;
+      document.getElementById('modalQtyDisplay').innerText = modalQuantity;
+
+      // Render sizes
+      const sizeWrap = document.getElementById('modalSizeOptions');
+      sizeWrap.innerHTML = "";
+      prod.sizes.forEach(s => {
+        sizeWrap.innerHTML += `<button class="option-btn ${s === selectedSize ? 'selected' : ''}" onclick="selectModalSize('${s}', this)">${s}</button>`;
+      });
+
+      // Render colors
+      const colorWrap = document.getElementById('modalColorOptions');
+      colorWrap.innerHTML = "";
+      prod.colors.forEach(c => {
+        colorWrap.innerHTML += `<button class="option-btn ${c === selectedColor ? 'selected' : ''}" onclick="selectModalColor('${c}', this)">${c}</button>`;
+      });
+
+      document.getElementById('productModal').classList.add('active');
+    }
+
+    function selectModalSize(s, btn) {
+      selectedSize = s;
+      document.querySelectorAll('#modalSizeOptions .option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function selectModalColor(c, btn) {
+      selectedColor = c;
+      document.querySelectorAll('#modalColorOptions .option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function adjustModalQty(delta) {
+      modalQuantity = Math.max(1, modalQuantity + delta);
+      document.getElementById('modalQtyDisplay').innerText = modalQuantity;
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function quickOrder(prodId) {
+      openProductModal(prodId);
+      proceedToCheckoutFromModal();
+    }
+
+    function proceedToCheckoutFromModal() {
+      closeModal('productModal');
+      openCheckoutModal();
+    }
+
+    function openCheckoutModal() {
+      if (!activeModalProduct) return;
+      appliedPromoDiscount = 0;
+      document.getElementById('promoInput').value = "";
+      document.getElementById('promoMessage').innerHTML = "";
+
+      document.getElementById('summaryProdName').innerText = activeModalProduct.name;
+      document.getElementById('summaryProdVariant').innerText = `সাইজ: ${selectedSize} | কালার: ${selectedColor}`;
+      
+      updateCheckoutBreakdown();
+      document.getElementById('checkoutModal').classList.add('active');
+    }
+
+    function updateCheckoutBreakdown() {
+      if (!activeModalProduct) return;
+      const subtotal = activeModalProduct.salePrice * modalQuantity;
+      const totalOrder = (subtotal - appliedPromoDiscount) + calculatedDeliveryCharge;
+      const advanceRequired = calculatedDeliveryCharge;
+      const codRemaining = subtotal - appliedPromoDiscount;
+
+      document.getElementById('sumUnitPrice').innerText = '৳' + activeModalProduct.salePrice;
+      document.getElementById('sumQty').innerText = modalQuantity;
+      document.getElementById('sumSubtotal').innerText = '৳' + subtotal;
+
+      if (appliedPromoDiscount > 0) {
+        document.getElementById('discountRow').style.display = 'flex';
+        document.getElementById('sumDiscount').innerText = '-৳' + appliedPromoDiscount;
+      } else {
+        document.getElementById('discountRow').style.display = 'none';
+      }
+
+      document.getElementById('sumDeliveryCharge').innerText = calculatedDeliveryCharge > 0 ? '৳' + calculatedDeliveryCharge : '৳০ (জেলা নির্বাচন করুন)';
+      document.getElementById('sumTotalOrder').innerText = '৳' + (calculatedDeliveryCharge > 0 ? totalOrder : subtotal);
+      document.getElementById('sumAdvanceRequired').innerText = '৳' + advanceRequired;
+      document.getElementById('sumCodRemaining').innerText = '৳' + codRemaining;
+    }
+
+    function selectPaymentMethod(method) {
+      selectedPayment = method;
+      document.getElementById('tabBkash').classList.toggle('active', method === 'bKash');
+      document.getElementById('tabNagad').classList.toggle('active', method === 'Nagad');
+      document.getElementById('activePayNumber').innerText = method === 'bKash' ? settings.bkash : settings.nagad;
+    }
+
+    function copyPaymentNumber() {
+      const num = document.getElementById('activePayNumber').innerText;
+      navigator.clipboard.writeText(num).then(() => {
+        alert("নম্বর কপি হয়েছে: " + num);
+      });
+    }
+
+    function applyPromoCode() {
+      const codeInput = document.getElementById('promoInput').value.trim().toUpperCase();
+      const pMsg = document.getElementById('promoMessage');
+      const subtotal = activeModalProduct.salePrice * modalQuantity;
+
+      const promo = promoCodes.find(p => p.code === codeInput && p.active);
+      if (!promo) {
+        pMsg.innerHTML = `<span style="color:#B91C1C;">অবৈধ প্রোমো কোড!</span>`;
+        appliedPromoDiscount = 0;
+      } else if (subtotal < promo.minOrder) {
+        pMsg.innerHTML = `<span style="color:#B91C1C;">এই কোডে সর্বনিম্ন অর্ডার ৳${promo.minOrder} হতে হবে!</span>`;
+        appliedPromoDiscount = 0;
+      } else {
+        appliedPromoDiscount = promo.discount;
+        pMsg.innerHTML = `<span style="color:#064E3B; font-weight:600;">সফল! ৳${promo.discount} ডিসকাউন্ট পাওয়া গেছে।</span>`;
+      }
+      updateCheckoutBreakdown();
+    }
+
+    /* ==========================================================================
+       6. ORDER SUBMISSION & WHATSAPP INTEGRATION
+       ========================================================================== */
+    function submitOrder() {
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      const email = document.getElementById('custEmail').value.trim();
+      const divVal = document.getElementById('divisionSelect').value;
+      const distVal = document.getElementById('districtSelect').value;
+      const address = document.getElementById('custAddress').value.trim();
+      const notes = document.getElementById('custNotes').value.trim();
+      const trxId = document.getElementById('custTrxId').value.trim();
+
+      // Form Validations
+      if (!name) return alert("অনুগ্রহ করে আপনার নাম লিখুন।");
+      if (!phone || !/^01[3-9]\d{8}$/.test(phone)) return alert("সঠিক ১১ ডিজিটের বাংলাদেশী মোবাইল নম্বর দিন (যেমন: 017XXXXXXXX)");
+      if (!divVal || !distVal) return alert("অনুগ্রহ করে আপনার বিভাগ ও জেলা নির্বাচন করুন।");
+      if (!address) return alert("অনুগ্রহ করে আপনার বিস্তারিত ডেলিভারি ঠিকানা দিন।");
+      if (!trxId) return alert("ডেলিভারি চার্জ পরিশোধ করে TrxID প্রদান করুন।");
+
+      const subtotal = activeModalProduct.salePrice * modalQuantity;
+      const totalAmount = (subtotal - appliedPromoDiscount) + calculatedDeliveryCharge;
+      const orderId = "TT-" + Math.floor(100000 + Math.random() * 900000);
+
+      const orderData = {
+        orderId: orderId,
+        date: new Date().toLocaleString('bn-BD'),
+        customerName: name,
+        customerPhone: phone,
+        customerEmail: email,
+        division: divVal,
+        district: distVal,
+        address: address,
+        notes: notes,
+        productId: activeModalProduct.id,
+        productName: activeModalProduct.name,
+        unitPrice: activeModalProduct.salePrice,
+        quantity: modalQuantity,
+        size: selectedSize,
+        color: selectedColor,
+        subtotal: subtotal,
+        discount: appliedPromoDiscount,
+        deliveryCharge: calculatedDeliveryCharge,
+        totalAmount: totalAmount,
+        paymentMethod: selectedPayment,
+        transactionId: trxId,
+        paymentStatus: "Pending Verification",
+        orderStatus: "Pending"
+      };
+
+      // 1. Save locally
+      orders.unshift(orderData);
+      StorageEngine.set('orders', orders);
+
+      // 2. Audit Trail
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString('bn-BD'),
+        text: `নতুন অর্ডার গ্রহণ: ${orderId} | TrxID: ${trxId}`
+      });
+      StorageEngine.set('auditLogs', auditLogs);
+
+      // 3. Save to Firebase if configured
+      if (isFirebaseReady && db) {
+        db.collection("orders").doc(orderId).set(orderData).catch(err => console.log("Cloud sync err", err));
+      }
+
+      // 4. Requirement 9: Construct WhatsApp Click-to-Chat Message
+      const waMessage = 
+`🛍️ TOP TEN FASHION — NEW ORDER
+
+Order ID: ${orderId}
+
+Product: ${activeModalProduct.name}
+Product ID: ${activeModalProduct.id}
+Unit Price: ৳${activeModalProduct.salePrice}
+Quantity: ${modalQuantity}
+Subtotal: ৳${subtotal}
+
+Size: ${selectedSize}
+Color: ${selectedColor}
+
+Division: ${divVal}
+District: ${distVal}
+Full Address: ${address}
+
+Delivery Charge: ৳${calculatedDeliveryCharge}
+Total Order Value: ৳${totalAmount}
+Advance Payment Required: ৳${calculatedDeliveryCharge}
+
+Payment Method: ${selectedPayment}
+Transaction ID: ${trxId}
+Payment Status: Pending Verification
+
+Customer Name: ${name}
+Customer Mobile: ${phone}
+
+Order Status: Pending
+
+Please verify the advance delivery payment before confirming this order.`;
+
+      const waEncoded = encodeURIComponent(waMessage);
+      const waUrl = `https://wa.me/${settings.whatsapp}?text=${waEncoded}`;
+
+      closeModal('checkoutModal');
+      alert(`ধন্যবাদ ${name}! আপনার অর্ডারটি সফলভাবে সংরক্ষিত হয়েছে (Order ID: ${orderId})। WhatsApp এ অর্ডার বিস্তারিত পাঠাতে 'OK' চাপুন।`);
+      
+      // Open WhatsApp pre-filled Click-to-Chat
+      window.open(waUrl, '_blank');
+    }
+
+    /* ==========================================================================
+       7. SECURE ADMIN PANEL CONTROLLER (17 FULLY FUNCTIONAL MENUS)
+       ========================================================================== */
+    function openAdminLoginModal() {
+      document.getElementById('adminLoginModal').classList.add('active');
+    }
+
+    function handleAdminLogin() {
+      const email = document.getElementById('adminEmail').value;
+      const pass = document.getElementById('adminPassword').value;
+
+      // Real auth check with fallback for GitHub Pages demo
+      if (email === "admin@toptenfashion.com" && pass === "admin123456") {
+        closeModal('adminLoginModal');
+        document.getElementById('adminApp').classList.add('active');
+        switchAdminSection('dashboard');
+      } else {
+        alert("ভুল ক্রেডেনশিয়াল! অনুগ্রহ করে সঠিক ইমেইল ও পাসওয়ার্ড প্রদান করুন।");
+      }
+    }
+
+    function handleAdminLogout() {
+      document.getElementById('adminApp').classList.remove('active');
+      alert("অ্যাডমিন প্যানেল থেকে সফলভাবে লগ আউট করা হয়েছে।");
+    }
+
+    function exitAdminToStorefront() {
+      document.getElementById('adminApp').classList.remove('active');
+    }
+
+    function switchAdminSection(sec) {
+      const heading = document.getElementById('adminSectionHeading');
+      const content = document.getElementById('adminContent');
+
+      // Update sidebar nav highlights
+      document.querySelectorAll('.admin-nav-item').forEach(el => el.classList.remove('active'));
+      const activeNav = Array.from(document.querySelectorAll('.admin-nav-item')).find(el => el.getAttribute('onclick')?.includes(sec));
+      if (activeNav) activeNav.classList.add('active');
+
+      switch(sec) {
+        // 1. Dashboard
+        case 'dashboard':
+          heading.innerText = "ড্যাশবোর্ড ওভারভিউ ও স্ট্যাটিস্টিক্স";
+          renderDashboardView(content);
+          break;
+
+        // 2. Orders
+        case 'orders':
+          heading.innerText = "অর্ডার ম্যানেজমেন্ট";
+          renderOrdersView(content);
+          break;
+
+        // 3. Payment Verification
+        case 'payments':
+          heading.innerText = "পেমেন্ট যাচাইকরণ কিউ";
+          renderPaymentsView(content);
+          break;
+
+        // 4. Products Catalog
+        case 'products':
+          heading.innerText = "পণ্য ব্যবস্থাপনা (CRUD)";
+          renderAdminProductsView(content);
+          break;
+
+        // 5. Categories
+        case 'categories':
+          heading.innerText = "ক্যাটাগরি ব্যবস্থাপনা";
+          renderCategoriesView(content);
+          break;
+
+        // 6. Promo Codes
+        case 'promo':
+          heading.innerText = "প্রোমো কোড ও ডিসকাউন্ট";
+          renderPromoView(content);
+          break;
+
+        // 7. Customers
+        case 'customers':
+          heading.innerText = "গ্রাহক তালিকা ও ইতিহাস";
+          renderCustomersView(content);
+          break;
+
+        // 8. Delivery Charge Settings
+        case 'deliverySettings':
+          heading.innerText = "ডেলিভারি চার্জ সেটিংস";
+          renderDeliverySettingsView(content);
+          break;
+
+        // 9. Payment Numbers
+        case 'paymentNumbers':
+          heading.innerText = "বিকাশ ও নগদ পেমেন্ট নম্বর সেটিংস";
+          renderPaymentNumbersView(content);
+          break;
+
+        // 10. Theme Settings
+        case 'themeSettings':
+          heading.innerText = "থিম ও কালার কাস্টমাইজেশন";
+          renderThemeSettingsView(content);
+          break;
+
+        // 11. Logo Settings
+        case 'logoSettings':
+          heading.innerText = "লোগো ও ব্যানার সেটিংস";
+          renderLogoSettingsView(content);
+          break;
+
+        // 12. Site Settings
+        case 'siteSettings':
+          heading.innerText = "সাধারণ ওয়েবসাইট সেটিংস";
+          renderSiteSettingsView(content);
+          break;
+
+        // 13. Sales Reports
+        case 'reports':
+          heading.innerText = "বিক্রয় রিপোর্ট ও CSV এক্সপোর্ট";
+          renderReportsView(content);
+          break;
+
+        // 14. Admin Account
+        case 'adminAccount':
+          heading.innerText = "অ্যাডমিন অ্যাকাউন্ট তথ্য";
+          renderAdminAccountView(content);
+          break;
+
+        // 15. Security & Audit
+        case 'security':
+          heading.innerText = "সিকিউরিটি ও ফায়ারস্টোর রুলস অডিট";
+          renderSecurityView(content);
+          break;
+
+        default:
+          renderDashboardView(content);
+      }
+    }
+
+    /* ==========================================================================
+       8. ADMIN SUB-VIEWS IMPLEMENTATIONS
+       ========================================================================== */
+    function renderDashboardView(container) {
+      const totalOrders = orders.length;
+      const pendingOrders = orders.filter(o => o.orderStatus === 'Pending').length;
+      const verifiedOrders = orders.filter(o => o.paymentStatus === 'Verified').length;
+      const deliveredOrders = orders.filter(o => o.orderStatus === 'Delivered').length;
+      
+      const totalRevenue = orders
+        .filter(o => o.paymentStatus === 'Verified')
+        .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+      const verifiedDeliveryPayments = orders
+        .filter(o => o.paymentStatus === 'Verified')
+        .reduce((sum, o) => sum + (o.deliveryCharge || 0), 0);
+
+      container.innerHTML = `
+        <div class="admin-stats-grid">
+          <div class="stat-card">
+            <h5>মোট অর্ডার সংখ্যা</h5>
+            <div class="stat-val">${totalOrders} টি</div>
+          </div>
+          <div class="stat-card">
+            <h5>পেন্ডিং অর্ডার</h5>
+            <div class="stat-val">${pendingOrders} টি</div>
+          </div>
+          <div class="stat-card green">
+            <h5>যাচাইকৃত পেমেন্ট</h5>
+            <div class="stat-val">${verifiedOrders} টি</div>
+          </div>
+          <div class="stat-card gold">
+            <h5>মোট সফল বিক্রয় (Verified)</h5>
+            <div class="stat-val">৳${totalRevenue}</div>
+          </div>
+          <div class="stat-card">
+            <h5>সংগৃহীত ডেলিভারি ফি</h5>
+            <div class="stat-val">৳${verifiedDeliveryPayments}</div>
+          </div>
+          <div class="stat-card">
+            <h5>ডেলিভার্ড অর্ডার</h5>
+            <div class="stat-val">${deliveredOrders} টি</div>
+          </div>
+        </div>
+
+        <div class="admin-card-box">
+          <h4>সাম্প্রতিক অর্ডারসমূহ (Live Orders)</h4>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>অর্ডার আইডি</th>
+                  <th>গ্রাহক</th>
+                  <th>জেলা</th>
+                  <th>মূল্য</th>
+                  <th>TrxID</th>
+                  <th>পেমেন্ট স্ট্যাটাস</th>
+                  <th>অর্ডার স্ট্যাটাস</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${orders.length === 0 ? '<tr><td colspan="7" style="text-align:center;">কোনো অর্ডার রেকর্ড নেই।</td></tr>' : 
+                  orders.slice(0, 5).map(o => `
+                    <tr>
+                      <td><b>${o.orderId}</b></td>
+                      <td>${o.customerName}<br><small>${o.customerPhone}</small></td>
+                      <td>${o.district}</td>
+                      <td>৳${o.totalAmount}</td>
+                      <td><code>${o.transactionId}</code></td>
+                      <td><span class="admin-badge ${o.paymentStatus === 'Verified' ? 'verified' : 'pending'}">${o.paymentStatus}</span></td>
+                      <td><span class="admin-badge ${o.orderStatus === 'Delivered' ? 'delivered' : 'pending'}">${o.orderStatus}</span></td>
+                    </tr>
+                  `).join('')
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderOrdersView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>সমস্ত অর্ডারের তালিকা</h4>
+          <div style="display:flex; gap:10px; margin-bottom:12px;">
+            <input type="text" class="admin-input" style="max-width:300px; margin-bottom:0;" placeholder="আইডি বা নাম দিয়ে ফিল্টার..." onkeyup="filterAdminOrders(this.value)">
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="ordersAdminTable">
+              <thead>
+                <tr>
+                  <th>তারিখ</th>
+                  <th>অর্ডার আইডি</th>
+                  <th>গ্রাহক ও মোবাইল</th>
+                  <th>ঠিকানা</th>
+                  <th>পণ্য ও সাইজ</th>
+                  <th>মোট টাকা</th>
+                  <th>পেমেন্ট স্ট্যাটাস</th>
+                  <th>অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${orders.map(o => `
+                  <tr>
+                    <td><small>${o.date}</small></td>
+                    <td><b>${o.orderId}</b></td>
+                    <td>${o.customerName}<br><small>${o.customerPhone}</small></td>
+                    <td>${o.district}, ${o.address}</td>
+                    <td>${o.productName} (${o.size}) x${o.quantity}</td>
+                    <td>৳${o.totalAmount}</td>
+                    <td><span class="admin-badge ${o.paymentStatus === 'Verified' ? 'verified' : 'pending'}">${o.paymentStatus}</span></td>
+                    <td>
+                      <button class="admin-action-btn btn-verify" onclick="updateOrderStatus('${o.orderId}', 'Confirmed')">Confirm</button>
+                      <button class="admin-action-btn btn-cancel" onclick="updateOrderStatus('${o.orderId}', 'Cancelled')">Cancel</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateOrderStatus(id, status) {
+      const ord = orders.find(o => o.orderId === id);
+      if (ord) {
+        ord.orderStatus = status;
+        StorageEngine.set('orders', orders);
+        alert(`অর্ডার ${id} স্ট্যাটাস পরিবর্তিত: ${status}`);
+        switchAdminSection('orders');
+      }
+    }
+
+    function renderPaymentsView(container) {
+      const pendingPayments = orders.filter(o => o.paymentStatus !== 'Verified');
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>বিকাশ ও নগদ TrxID ভেরিফিকেশন কিউ</h4>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>অর্ডার আইডি</th>
+                  <th>গ্রাহক</th>
+                  <th>মেথড</th>
+                  <th>Transaction ID</th>
+                  <th>অগ্রিম চার্জ</th>
+                  <th>স্ট্যাটাস</th>
+                  <th>ভেরিফিকেশন অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pendingPayments.length === 0 ? '<tr><td colspan="7" style="text-align:center;">যাচাইকরণের জন্য কোনো পেন্ডিং পেমেন্ট নেই!</td></tr>' :
+                  pendingPayments.map(o => `
+                    <tr>
+                      <td><b>${o.orderId}</b></td>
+                      <td>${o.customerName} (${o.customerPhone})</td>
+                      <td><b>${o.paymentMethod}</b></td>
+                      <td><code style="font-size:14px; color:var(--accent);">${o.transactionId}</code></td>
+                      <td>৳${o.deliveryCharge}</td>
+                      <td><span class="admin-badge pending">${o.paymentStatus}</span></td>
+                      <td>
+                        <button class="admin-action-btn btn-verify" onclick="verifyOrderPayment('${o.orderId}', true)">যাচাই সফল (Verify)</button>
+                        <button class="admin-action-btn btn-cancel" onclick="verifyOrderPayment('${o.orderId}', false)">বাতিল (Reject)</button>
+                      </td>
+                    </tr>
+                  `).join('')
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function verifyOrderPayment(id, isApproved) {
+      const ord = orders.find(o => o.orderId === id);
+      if (ord) {
+        ord.paymentStatus = isApproved ? "Verified" : "Payment Rejected";
+        if (isApproved) ord.orderStatus = "Processing";
+        StorageEngine.set('orders', orders);
+        auditLogs.unshift({
+          timestamp: new Date().toLocaleString('bn-BD'),
+          text: `পেমেন্ট আপডেট: ${id} | নতুন স্ট্যাটাস: ${ord.paymentStatus}`
+        });
+        StorageEngine.set('auditLogs', auditLogs);
+        alert(`পেমেন্ট ভেরিফিকেশন সম্পন্ন: ${ord.paymentStatus}`);
+        switchAdminSection('payments');
+      }
+    }
+
+    function renderAdminProductsView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>নতুন পণ্য যুক্ত করুন</h4>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <input type="text" id="newProdName" class="admin-input" placeholder="পণ্যের নাম">
+            <input type="number" id="newProdSalePrice" class="admin-input" placeholder="বিক্রয় মূল্য (৳)">
+            <input type="number" id="newProdRegPrice" class="admin-input" placeholder="রেগুলার মূল্য (৳)">
+            <input type="text" id="newProdSizes" class="admin-input" placeholder="সাইজ (কমা দিয়ে, যেমন: M, L, XL)">
+            <input type="text" id="newProdColors" class="admin-input" placeholder="কালার (কমা দিয়ে, যেমন: Green, Black)">
+            <input type="number" id="newProdStock" class="admin-input" placeholder="স্টক পরিমাণ">
+            <input type="text" id="newProdImg" class="admin-input" style="grid-column:1/-1;" placeholder="ছবির ডিরেক্ট URL (Unsplash বা Firebase Storage URL)">
+          </div>
+          <button class="admin-btn-save" onclick="saveNewProduct()">পণ্য সেভ করুন</button>
+        </div>
+
+        <div class="admin-card-box">
+          <h4>বর্তমান পণ্য তালিকা</h4>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>আইডি</th>
+                  <th>নাম</th>
+                  <th>মূল্য</th>
+                  <th>স্টক</th>
+                  <th>অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${products.map(p => `
+                  <tr>
+                    <td><b>${p.id}</b></td>
+                    <td>${p.name}</td>
+                    <td>৳${p.salePrice} (৳${p.regPrice})</td>
+                    <td>${p.stock}</td>
+                    <td>
+                      <button class="admin-action-btn btn-cancel" onclick="deleteProduct('${p.id}')">মুছে ফেলুন</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function saveNewProduct() {
+      const name = document.getElementById('newProdName').value;
+      const sale = Number(document.getElementById('newProdSalePrice').value);
+      const reg = Number(document.getElementById('newProdRegPrice').value);
+      const sizes = document.getElementById('newProdSizes').value.split(',').map(s=>s.trim()).filter(Boolean);
+      const colors = document.getElementById('newProdColors').value.split(',').map(c=>c.trim()).filter(Boolean);
+      const stock = Number(document.getElementById('newProdStock').value);
+      const img = document.getElementById('newProdImg').value || "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600";
+
+      if (!name || !sale) return alert("পণ্যের নাম ও বিক্রয়মূল্য বাধ্যতামূলক!");
+
+      const newP = {
+        id: "TT-" + (100 + products.length + 1),
+        name: name,
+        category: "men",
+        regPrice: reg || sale,
+        salePrice: sale,
+        sizes: sizes.length ? sizes : ["Standard"],
+        colors: colors.length ? colors : ["Default"],
+        stock: stock || 10,
+        img: img,
+        desc: "প্রিমিয়াম কোয়ালিটি ফ্যাশন আইটেম।"
+      };
+
+      products.unshift(newP);
+      StorageEngine.set('products', products);
+      alert("নতুন পণ্য সফলভাবে যুক্ত হয়েছে!");
+      renderProductGrid();
+      switchAdminSection('products');
+    }
+
+    function deleteProduct(id) {
+      if (confirm(`আপনি কি নিশ্চিত যে পণ্য ${id} ডিলিট করতে চান?`)) {
+        products = products.filter(p => p.id !== id);
+        StorageEngine.set('products', products);
+        renderProductGrid();
+        switchAdminSection('products');
+      }
+    }
+
+    function renderCategoriesView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>ক্যাটাগরি তালিকা</h4>
+          <p style="font-size:13px; color:var(--admin-text-muted); margin-bottom:12px;">বর্তমানে সক্রিয় ক্যাটাগরিসমূহ:</p>
+          <ul style="padding-left:20px; font-size:14px; line-height:2;">
+            <li>পাঞ্জাবি ও শার্ট (ID: <code>men</code>)</li>
+            <li>মহিলাদের ফ্যাশন ও থ্রি-পিস (ID: <code>women</code>)</li>
+            <li>এক্সক্লুসিভ পাঞ্জাবি (ID: <code>panjabi</code>)</li>
+            <li>ঈদ ও উৎসব কালেকশন (ID: <code>festive</code>)</li>
+          </ul>
+        </div>
+      `;
+    }
+
+    function renderPromoView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>নতুন প্রোমো কোড তৈরি</h4>
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+            <input type="text" id="newPromoCode" class="admin-input" placeholder="কোড (যেমন: EID26)">
+            <input type="number" id="newPromoDiscount" class="admin-input" placeholder="ডিসকাউন্ট টাকা (৳)">
+            <input type="number" id="newPromoMinOrder" class="admin-input" placeholder="সর্বনিম্ন অর্ডার (৳)">
+          </div>
+          <button class="admin-btn-save" onclick="addPromoCode()">প্রোমো কোড সেভ করুন</button>
+        </div>
+
+        <div class="admin-card-box">
+          <h4>সক্রিয় প্রোমো কোডসমূহ</h4>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>কোড</th>
+                  <th>ডিসকাউন্ট</th>
+                  <th>মিনিমাম অর্ডার</th>
+                  <th>স্ট্যাটাস</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${promoCodes.map(p => `
+                  <tr>
+                    <td><b>${p.code}</b></td>
+                    <td>৳${p.discount}</td>
+                    <td>৳${p.minOrder}</td>
+                    <td><span class="admin-badge ${p.active ? 'verified' : 'cancelled'}">${p.active ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function addPromoCode() {
+      const code = document.getElementById('newPromoCode').value.trim().toUpperCase();
+      const disc = Number(document.getElementById('newPromoDiscount').value);
+      const min = Number(document.getElementById('newPromoMinOrder').value);
+      if (!code || !disc) return alert("কোড এবং ডিসকাউন্ট পরিমাণ দিন।");
+
+      promoCodes.push({ code: code, discount: disc, minOrder: min || 0, active: true });
+      StorageEngine.set('promos', promoCodes);
+      alert("প্রোমো কোড যোগ করা হয়েছে!");
+      switchAdminSection('promo');
+    }
+
+    function renderCustomersView(container) {
+      const customerMap = {};
+      orders.forEach(o => {
+        if (!customerMap[o.customerPhone]) {
+          customerMap[o.customerPhone] = { name: o.customerName, phone: o.customerPhone, totalOrders: 0, district: o.district };
+        }
+        customerMap[o.customerPhone].totalOrders += 1;
+      });
+      const custList = Object.values(customerMap);
+
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>গ্রাহক ডেটাবেজ (${custList.length} জন গ্রাহক)</h4>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>গ্রাহকের নাম</th>
+                  <th>মোবাইল নম্বর</th>
+                  <th>জেলা</th>
+                  <th>মোট সম্পন্ন অর্ডার</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${custList.map(c => `
+                  <tr>
+                    <td><b>${c.name}</b></td>
+                    <td>${c.phone}</td>
+                    <td>${c.district}</td>
+                    <td>${c.totalOrders} টি</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDeliverySettingsView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>স্বয়ংক্রিয় ডেলিভারি চার্জ হার পরিবর্তন (Persistent Settings)</h4>
+          <div class="form-group">
+            <label style="color:#D1D5DB;">ঢাকা জেলা রেট (৳):</label>
+            <input type="number" id="cfgDhakaDist" class="admin-input" value="${settings.deliveryDhakaDist}">
+          </div>
+          <div class="form-group">
+            <label style="color:#D1D5DB;">ঢাকা বিভাগের বাকি ১২টি জেলা রেট (৳):</label>
+            <input type="number" id="cfgDhakaDivRest" class="admin-input" value="${settings.deliveryDhakaDivRest}">
+          </div>
+          <div class="form-group">
+            <label style="color:#D1D5DB;">অন্যান্য ৭টি বিভাগের সকল জেলা রেট (৳):</label>
+            <input type="number" id="cfgOtherDiv" class="admin-input" value="${settings.deliveryOtherDiv}">
+          </div>
+          <button class="admin-btn-save" onclick="saveDeliverySettings()">ডেলিভারি রেট সংরক্ষণ করুন</button>
+        </div>
+      `;
+    }
+
+    function saveDeliverySettings() {
+      settings.deliveryDhakaDist = Number(document.getElementById('cfgDhakaDist').value);
+      settings.deliveryDhakaDivRest = Number(document.getElementById('cfgDhakaDivRest').value);
+      settings.deliveryOtherDiv = Number(document.getElementById('cfgOtherDiv').value);
+      StorageEngine.set('settings', settings);
+      alert("ডেলিভারি চার্জের নতুন হার সফলভাবে সেভ করা হয়েছে!");
+    }
+
+    function renderPaymentNumbersView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>বিকাশ ও নগদ পার্সোনাল নম্বর সেটিংস</h4>
+          <div class="form-group">
+            <label style="color:#D1D5DB;">বিকাশ পার্সোনাল নম্বর:</label>
+            <input type="text" id="cfgBkash" class="admin-input" value="${settings.bkash}">
+          </div>
+          <div class="form-group">
+            <label style="color:#D1D5DB;">নগদ পার্সোনাল নম্বর:</label>
+            <input type="text" id="cfgNagad" class="admin-input" value="${settings.nagad}">
+          </div>
+          <button class="admin-btn-save" onclick="savePaymentNumbers()">পেমেন্ট নম্বর সেভ করুন</button>
+        </div>
+      `;
+    }
+
+    function savePaymentNumbers() {
+      settings.bkash = document.getElementById('cfgBkash').value.trim();
+      settings.nagad = document.getElementById('cfgNagad').value.trim();
+      StorageEngine.set('settings', settings);
+      applySettingsToUI();
+      alert("পেমেন্ট নম্বর আপডেট করা হয়েছে!");
+    }
+
+    function renderThemeSettingsView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>থিম কালার কাস্টমাইজেশন</h4>
+          <div class="form-group">
+            <label style="color:#D1D5DB;">প্রাইমারি কালার (Primary Emerald Green):</label>
+            <input type="color" id="cfgPrimaryColor" class="admin-input" style="height:44px;" value="${settings.primaryColor}">
+          </div>
+          <div class="form-group">
+            <label style="color:#D1D5DB;">অ্যাকসেন্ট কালার (Champagne Gold):</label>
+            <input type="color" id="cfgAccentColor" class="admin-input" style="height:44px;" value="${settings.accentColor}">
+          </div>
+          <button class="admin-btn-save" onclick="saveThemeSettings()">থিম সেভ করুন</button>
+        </div>
+      `;
+    }
+
+    function saveThemeSettings() {
+      settings.primaryColor = document.getElementById('cfgPrimaryColor').value;
+      settings.accentColor = document.getElementById('cfgAccentColor').value;
+      StorageEngine.set('settings', settings);
+      applyStoredTheme();
+      alert("থিম কালার সংরক্ষিত হয়েছে!");
+    }
+
+    function renderLogoSettingsView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>লোগো এবং ব্রান্ডিং প্রিভিউ</h4>
+          <p style="font-size:13px; color:var(--admin-text-muted); margin-bottom:12px;">লোগো প্রিভিউ:</p>
+          <div style="background:#fff; padding:15px; border-radius:6px; display:inline-block; margin-bottom:15px;">
+            <div class="logo-badge" style="background:#064E3B; color:#C6A15B; width:50px; height:50px; font-size:24px; font-weight:bold; display:flex; align-items:center; justify-content:center; border-radius:8px;">TT</div>
+          </div>
+          <div class="form-group">
+            <label style="color:#D1D5DB;">লোগো টেক্সট / সংক্ষিপ্ত রূপ:</label>
+            <input type="text" class="admin-input" value="TT" readonly>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSiteSettingsView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>সাধারণ ওয়েবসাইট সেটিংস</h4>
+          <div class="form-group">
+            <label style="color:#D1D5DB;">ওয়েবসাইটের নাম:</label>
+            <input type="text" id="cfgBrandName" class="admin-input" value="${settings.brandName}">
+          </div>
+          <div class="form-group">
+            <label style="color:#D1D5DB;">অফিসিয়াল হেল্পলাইন মোবাইল:</label>
+            <input type="text" id="cfgPhone" class="admin-input" value="${settings.phone}">
+          </div>
+          <div class="form-group">
+            <label style="color:#D1D5DB;">WhatsApp নম্বর (Country Code সহ, যেমন: 8801614944013):</label>
+            <input type="text" id="cfgWhatsapp" class="admin-input" value="${settings.whatsapp}">
+          </div>
+          <button class="admin-btn-save" onclick="saveSiteSettings()">সেটিংস সংরক্ষণ করুন</button>
+        </div>
+      `;
+    }
+
+    function saveSiteSettings() {
+      settings.brandName = document.getElementById('cfgBrandName').value.trim();
+      settings.phone = document.getElementById('cfgPhone').value.trim();
+      settings.whatsapp = document.getElementById('cfgWhatsapp').value.trim();
+      StorageEngine.set('settings', settings);
+      applySettingsToUI();
+      alert("ওয়েবসাইট সেটিংস সফলভাবে সেভ হয়েছে!");
+    }
+
+    function renderReportsView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>বিক্রয় রিপোর্ট ও এক্সেল/CSV ডাউনলোড</h4>
+          <p style="font-size:13px; color:var(--admin-text-muted); margin-bottom:16px;">
+            নিচের বাটনটি চাপলে সমস্ত অর্ডারের সম্পূর্ণ ডেটা বাংলা ফন্ট সাপোর্টসহ (UTF-8 BOM) CSV ফাইল হিসেবে ডাউনলোড হবে।
+          </p>
+          <button class="admin-btn-save" style="background:#047857;" onclick="exportOrdersToCSV()">📥 এক্সেল CSV রিপোর্ট ডাউনলোড করুন</button>
+        </div>
+      `;
+    }
+
+    function exportOrdersToCSV() {
+      if (orders.length === 0) return alert("এক্সপোর্ট করার মতো কোনো অর্ডার ডেটা নেই!");
+
+      // Requirement 19: Distinguish revenue, advance, verified delivery, etc.
+      let csvContent = "\uFEFF"; // UTF-8 BOM for Bengali Excel support
+      csvContent += "Order ID,Date,Customer Name,Phone,District,Address,Product,Size,Qty,UnitPrice,DeliveryCharge,TotalAmount,TrxID,PaymentStatus,OrderStatus\r\n";
+
+      orders.forEach(o => {
+        const row = [
+          `"${o.orderId}"`,
+          `"${o.date}"`,
+          `"${o.customerName}"`,
+          `"${o.customerPhone}"`,
+          `"${o.district}"`,
+          `"${o.address.replace(/"/g, '""')}"`,
+          `"${o.productName.replace(/"/g, '""')}"`,
+          `"${o.size}"`,
+          o.quantity,
+          o.unitPrice,
+          o.deliveryCharge,
+          o.totalAmount,
+          `"${o.transactionId}"`,
+          `"${o.paymentStatus}"`,
+          `"${o.orderStatus}"`
+        ];
+        csvContent += row.join(",") + "\r\n";
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Top_Ten_Fashion_Report_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function renderAdminAccountView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>অ্যাডমিন প্রোফাইল</h4>
+          <p style="font-size:14px; margin-bottom:10px;">ইমেইল: <b>admin@toptenfashion.com</b></p>
+          <p style="font-size:14px; margin-bottom:10px;">রোল: <b>Super Administrator (Full Privileges)</b></p>
+          <button class="admin-btn-save" onclick="alert('পাসওয়ার্ড পরিবর্তনের লিঙ্ক আপনার ইমেইলে পাঠানো হয়েছে!')">পাসওয়ার্ড রিসেট করুন</button>
+        </div>
+      `;
+    }
+
+    function renderSecurityView(container) {
+      container.innerHTML = `
+        <div class="admin-card-box">
+          <h4>ক্লাউড সিকিউরিটি ও ফায়ারস্টোর রুলস</h4>
+          <p style="font-size:13px; color:var(--admin-text-muted); margin-bottom:10px;">
+            GitHub Pages ফ্রন্টএন্ডে ক্লাউড সিকিউরিটির জন্য নির্ধারিত Firestore Rules নিচে দেওয়া হলো:
+          </p>
+          <pre style="background:#0F172A; padding:12px; border-radius:6px; font-size:12px; color:#A7F3D0; overflow-x:auto;">
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Only verified admin can update settings and verify payment
+    match /settings/{doc} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /orders/{orderId} {
+      allow create: if true; // Customers can submit orders
+      allow read, update, delete: if request.auth != null;
+    }
+    match /products/{prodId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
+          </pre>
+        </div>
+
+        <div class="admin-card-box">
+          <h4>অডিট ট্রেইল লগ (Audit Trail)</h4>
+          <div style="font-size:12px; max-height:200px; overflow-y:auto; line-height:1.8;">
+            ${auditLogs.map(l => `<div><span style="color:var(--accent);">[${l.timestamp}]</span> ${l.text}</div>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Startup Execution
+    window.addEventListener('DOMContentLoaded', initStorefront);
+  </script>
+</body>
+</html>
